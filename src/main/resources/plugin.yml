@@ -1,0 +1,22 @@
+name: VTDXStats
+version: '${version}'
+main: dev.incubuswoods.vtdxstats.VTDXStats
+api-version: '1.21'
+author: IncubusWoods
+depend: [VTuberDexBridge]
+softdepend: [MythicLib, PlaceholderAPI]
+commands:
+  vtdxstats:
+    description: VTuberDex stats distribution
+    usage: /vtdxstats [stats|repartir|admin|reset <player>|reload]
+    aliases: [vstats]
+permissions:
+  vtdxstats.use:
+    description: Open your stats
+    default: true
+  vtdxstats.admin:
+    description: Admin stats GUI and reload
+    default: op
+  vtdxstats.reset.others:
+    description: Reset other players stats
+    default: op

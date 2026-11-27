@@ -1,0 +1,200 @@
+# VTDXStats - stat distribution system using VTuberDexBridge + MythicLib
+
+# Level source
+level:
+  # VTuberDexBridge profile.gameLevel() is used by default.
+  # Fallback when bridge/profile unavailable:
+  # NONE - treat as level 1 (no extra points)
+  # FIXED - use fallback-fixed-level
+  # LAST_KNOWN - use last known bridge level, else fallback-fixed-level
+  fallback-source: LAST_KNOWN
+  fallback-fixed-level: 1
+  max-level: 100
+  points-per-level: 5
+
+# MythicLib command templates. Placeholders: {player} {stat} {value} {key}
+mythiclib:
+  enabled: true
+  key: vtdxstats
+  command-add: "ml stat add {player} {stat} {value} 0 {key}"
+  command-remove: "ml stat remove {player} {stat} {key}"
+  # Apply stats on join after delay (ticks)
+  apply-delay-ticks: 40
+
+# If config reduces a stat max below points already allocated, clamp and refund.
+clamp-refund-on-reload: true
+
+# GUI settings. Slots are 0-53. Invalid/duplicate slots are auto-resolved.
+gui:
+  overview:
+    title: "<dark_purple>Tus stats</dark_purple>"
+    size: 54
+    filler: GRAY_STAINED_GLASS_PANE
+    slots:
+      info: 4
+      repartir: 49
+      cerrar: 53
+      # 12 stat value slots in order of stats.*.attributes
+      values: [9,10,12,13,15,16,18,19,21,22,24,25]
+      # 6 bonus slots in stat order
+      bonuses: [28,31,34,37,40,43]
+  repartir:
+    title: "<dark_purple>Reparte tus puntos</dark_purple>"
+    size: 54
+    filler: GRAY_STAINED_GLASS_PANE
+    slots:
+      info: 22
+      cerrar: 49
+      # 6 stat slots in stat order
+      stats: [4,15,33,40,29,11]
+  admin-players:
+    title: "<dark_red>VTDXStats - Jugadores</dark_red>"
+    size: 54
+    filler: GRAY_STAINED_GLASS_PANE
+    slots:
+      previous: 45
+      close: 49
+      next: 53
+      players: [10,11,12,13,14,15,16,19,20,21,22,23,24,25,28,29,30,31,32,33,34]
+  admin-player:
+    title: "<dark_red>Stats de {player}</dark_red>"
+    size: 54
+    filler: GRAY_STAINED_GLASS_PANE
+    slots:
+      info: 4
+      reset: 49
+      back: 45
+      close: 53
+      # one slot per stat, in stat order
+      stats: [19,20,21,22,23,24]
+
+messages:
+  no-permission: "<red>No tienes permiso.</red>"
+  no-bridge: "<red>VTuberDexBridge no est? disponible.</red>"
+  no-profile: "<yellow>Sin ficha vinculada. Vincula tu cuenta para usar stats.</yellow>"
+  reloaded: "<green>VTDXStats recargado.</green>"
+  reset-self: "<green>Tus puntos de stats fueron reiniciados.</green>"
+  reset-other: "<green>Stats reiniciados para <white>{player}</white>.</green>"
+  stat-disabled: "<red>Esa stat est? desactivada por un administrador.</red>"
+
+# 6 stats. Default mirrors VTuberDex. id is internal key.
+stats:
+  vitalidad:
+    name: "Vitalidad"
+    icon: GOLDEN_APPLE
+    max-points: 200
+    description: "Vida y defensa."
+    attributes:
+      - id: MAX_HEALTH
+        per-point: 25
+        cap: 5000
+        display: "Vida m?xima"
+      - id: DEFENSE
+        per-point: 5
+        cap: 1000
+        display: "Defensa"
+    bonuses:
+      - type: MAGIC_DAMAGE_REDUCTION
+        id: RESISTENCIA_MAGICA
+        display: "+50% resistencia m?gica"
+        multiplier: 0.5
+        causes: [MAGIC, DRAGON_BREATH]
+  fuerza:
+    name: "Fuerza"
+    icon: IRON_SWORD
+    max-points: 200
+    description: "Da?o f?sico."
+    attributes:
+      - id: ATTACK_DAMAGE
+        per-point: 12.5
+        cap: 2500
+        display: "Da?o de ataque"
+      - id: PHYSICAL_DAMAGE
+        per-point: 0.25
+        cap: 50
+        display: "Da?o f?sico"
+    bonuses:
+      - type: AOE_DAMAGE
+        id: DANO_EXPANSIVO
+        display: "+3 da?o expansivo"
+        damage: 3.0
+        radius: 3.0
+        exclude-players: true
+  agilidad:
+    name: "Agilidad"
+    icon: FEATHER
+    max-points: 200
+    description: "Velocidad y evasi?n."
+    attributes:
+      - id: ATTACK_SPEED
+        per-point: 0.02
+        cap: 4
+        display: "Velocidad de ataque"
+      - id: DODGE_RATING
+        per-point: 0.375
+        cap: 75
+        display: "Evasi?n"
+    bonuses:
+      - type: MYTHICLIB_STAT
+        id: MOVEMENT_SPEED_BONUS
+        stat: MOVEMENT_SPEED
+        value: 0.1
+        display: "+0.1 velocidad de movimiento"
+  inteligencia:
+    name: "Inteligencia"
+    icon: LAPIS_LAZULI
+    max-points: 200
+    description: "Da?o m?gico y man?."
+    attributes:
+      - id: MAGIC_DAMAGE
+        per-point: 0.25
+        cap: 50
+        display: "Da?o m?gico"
+      - id: MAX_MANA
+        per-point: 25
+        cap: 5000
+        display: "Man? m?ximo"
+    bonuses:
+      - type: MYTHICLIB_STAT
+        id: MANA_REGENERATION_BONUS
+        stat: MANA_REGENERATION
+        value: 50
+        display: "+50 regeneraci?n de man?"
+  destreza:
+    name: "Destreza"
+    icon: SPECTRAL_ARROW
+    max-points: 200
+    description: "Proyectiles y precisi?n."
+    attributes:
+      - id: PROJECTILE_DAMAGE
+        per-point: 0.25
+        cap: 50
+        display: "Da?o de proyectil"
+      - id: RECOIL
+        per-point: -0.5
+        cap: -100
+        display: "Dispersi?n"
+    bonuses:
+      - type: MYTHICLIB_STAT
+        id: CRITICAL_STRIKE_POWER_BONUS
+        stat: CRITICAL_STRIKE_POWER
+        value: 25
+        display: "+25% da?o cr?tico"
+  suerte:
+    name: "Suerte"
+    icon: RABBIT_FOOT
+    max-points: 200
+    description: "Cr?tico y suerte."
+    attributes:
+      - id: CRITICAL_STRIKE_CHANCE
+        per-point: 0.5
+        cap: 100
+        display: "Probabilidad de cr?tico"
+      - id: LUCK
+        per-point: 0.025
+        cap: 5
+        display: "Suerte"
+    bonuses:
+      - type: FALL_DAMAGE_IMMUNITY
+        id: REDUCCION_CAIDA
+        display: "100% reducci?n de da?o por ca?da"
