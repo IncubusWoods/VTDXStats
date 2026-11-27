@@ -62,12 +62,17 @@ final class StatService {
         return now;
     }
 
+    int effectiveMaxPoints(UUID uuid, StatDef def) {
+        return plugin.cfg().effectiveMaxPoints(def, resolveLevel(uuid));
+    }
+
     int addPoints(UUID uuid, String stat, int amount) {
         StatDef def = plugin.cfg().get(stat);
         if (def == null || amount <= 0) return 0;
         if (isStatDisabled(uuid, stat)) return 0;
         int cur = getPoints(uuid, stat);
-        int can = Math.min(amount, Math.max(0, def.maxPoints() - cur));
+        int cap = effectiveMaxPoints(uuid, def);
+        int can = Math.min(amount, Math.max(0, cap - cur));
         can = Math.min(can, availablePoints(uuid));
         if (can <= 0) return 0;
         plugin.store().setPoints(uuid, def.key(), cur + can);
@@ -89,8 +94,9 @@ final class StatService {
         PlayerStatData d = plugin.store().get(uuid);
         for (StatDef def : plugin.cfg().defs()) {
             int cur = Math.max(0, d.points().getOrDefault(def.key(), 0));
-            if (cur > def.maxPoints()) {
-                d.points().put(def.key(), def.maxPoints());
+            int cap = effectiveMaxPoints(uuid, def);
+            if (cur > cap) {
+                d.points().put(def.key(), cap);
                 changed = true;
             }
         }

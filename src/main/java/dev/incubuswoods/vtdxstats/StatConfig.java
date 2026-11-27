@@ -20,6 +20,7 @@ final class StatConfig {
     String mythicAdd = "ml stat add {player} {stat} {value} 0 {key}";
     String mythicRemove = "ml stat remove {player} {stat} {key}";
     int applyDelayTicks = 40;
+    final java.util.List<int[]> statPointCaps = new java.util.ArrayList<>(); // [level, maxPoints]
 
     StatConfig(VTDXStats plugin) { this.plugin = plugin; reload(); }
 
@@ -35,6 +36,14 @@ final class StatConfig {
         mythicAdd = c.getString("mythiclib.command-add", mythicAdd);
         mythicRemove = c.getString("mythiclib.command-remove", mythicRemove);
         applyDelayTicks = Math.max(1, c.getInt("mythiclib.apply-delay-ticks", 40));
+
+        statPointCaps.clear();
+        for (Map<?,?> m : c.getMapList("level.stat-point-caps")) {
+            int lvl = (int) Math.max(1, num(m.get("level")));
+            int mp = (int) Math.max(0, num(m.get("max-points")));
+            statPointCaps.add(new int[]{lvl, mp});
+        }
+        statPointCaps.sort(java.util.Comparator.comparingInt(a -> a[0]));
 
         stats.clear(); statOrder.clear();
         ConfigurationSection sec = c.getConfigurationSection("stats");
@@ -89,6 +98,24 @@ final class StatConfig {
     }
     static String str(Object o) { return o == null ? "" : String.valueOf(o).trim(); }
     static double num(Object o) { if (o instanceof Number n) return n.doubleValue(); try { return Double.parseDouble(String.valueOf(o)); } catch (Exception e) { return 0; } }
+
+    int maxPointsForLevel(int level) {
+        int cap = Integer.MAX_VALUE;
+        if (!statPointCaps.isEmpty()) {
+            cap = 0;
+            for (int[] e : statPointCaps) {
+                if (level >= e[0]) cap = e[1];
+                else break;
+            }
+        }
+        // never above configured stat max-points
+        return cap;
+    }
+
+    int effectiveMaxPoints(StatDef def, int level) {
+        int byLevel = maxPointsForLevel(level);
+        return Math.max(0, Math.min(def.maxPoints(), byLevel));
+    }
 
     private static ConfigurationSection toSection(ConfigurationSection parent, String path, Map<?,?> map) {
         ConfigurationSection s = parent.createSection(path);

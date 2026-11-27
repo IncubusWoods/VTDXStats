@@ -118,13 +118,16 @@ final class Guis {
         String bar = "<aqua>"+"?".repeat(bars)+"</aqua><dark_gray>"+"?".repeat(10-bars)+"</dark_gray>";
         List<String> lore = new ArrayList<>();
         lore.add(bar);
+        int cap = plugin.stats().effectiveMaxPoints(u, def);
         lore.add("<gray>Puestos: <white>"+pts+" / "+max+"</white>");
+        if (cap < max) lore.add("<gray>L?mite por nivel: <yellow>"+cap+"</yellow> <dark_gray>(sube de nivel para m?s)</dark_gray>");
         for (StatAttribute a : def.attributes()) {
             double val = disabled ? 0 : a.valueFor(pts, max);
             lore.add("<gray>"+a.display()+": <green>"+plugin.stats().fmt(val)+"</green>");
         }
         if (disabled) lore.add("<red>Desactivada por admin</red>");
         else if (pts >= max) lore.add("<gold>M?ximo alcanzado</gold>");
+        else if (pts >= cap) lore.add("<yellow>L?mite por nivel alcanzado: "+cap+"/"+max+"</yellow>");
         else if (avail <= 0) lore.add("<gray>Sin puntos disponibles</gray>");
         else lore.add("<yellow>Izq: +1 | Der: +5 | Shift: m?x</yellow>");
         return item(def.icon(), "<aqua>"+def.name(), lore);
@@ -176,8 +179,10 @@ final class Guis {
             h.statSlots.put(slot, def.key());
             boolean disabled = plugin.stats().isStatDisabled(target, def.key());
             int pts = plugin.stats().getPoints(target, def.key());
+            int cap = plugin.stats().effectiveMaxPoints(target, def);
             List<String> lore = new ArrayList<>();
             lore.add("<gray>Puntos: <white>"+pts+"/"+def.maxPoints()+"</white>");
+            lore.add("<gray>L?mite por nivel: <yellow>"+cap+"</yellow>");
             lore.add(disabled ? "<red>ESCALADO DESACTIVADO</red>" : "<green>Escalado activo</green>");
             lore.add("<yellow>Click para alternar</yellow>");
             h.inv.setItem(slot, item(disabled?Material.BARRIER:def.icon(), (disabled?"<red>":"<aqua>")+def.name(), lore));

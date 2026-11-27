@@ -12,6 +12,20 @@ level:
   max-level: 100
   points-per-level: 5
 
+  # Max points that can be allocated into a single stat until a level threshold.
+  # Add as many lines as needed. The highest level <= player level applies.
+  # If omitted/empty, no level cap is applied (only stat max-points).
+  # Example requested: up to 25 at lvl25, 50 at lvl40, 100 at lvl60, 200 at lvl100.
+  stat-point-caps:
+    - level: 25
+      max-points: 25
+    - level: 40
+      max-points: 50
+    - level: 60
+      max-points: 100
+    - level: 100
+      max-points: 200
+
 # MythicLib command templates. Placeholders: {player} {stat} {value} {key}
 mythiclib:
   enabled: true
