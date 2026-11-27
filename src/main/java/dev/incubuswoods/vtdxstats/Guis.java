@@ -50,7 +50,10 @@ final class Guis {
                 lore.add("<gray>Por punto: <white>"+plugin.stats().fmt(a.perPoint())+"</white> <gray>Cap: <white>"+plugin.stats().fmt(a.cap())+"</white>");
                 lore.add("<gray>Stat: <aqua>"+def.name()+"</aqua> <white>"+pts+"/"+def.maxPoints()+"</white>");
                 if (disabled) lore.add("<red>Desactivado por admin</red>");
-                h.inv.setItem(slot, item(a.icon()!=null?a.icon():def.icon(), "<aqua>"+def.name()+" <gray>? <white>"+a.display()+"</white>", lore, a.itemModel()));
+                String sep = plugin.getConfig().getString("gui.format.attribute-separator", " <gray>? <white>");
+                String nameFmt = plugin.getConfig().getString("gui.format.attribute-name", "<aqua>{stat}{sep}{attr}</white>");
+                String itemName = nameFmt.replace("{stat}", def.name()).replace("{sep}", sep).replace("{attr}", a.display());
+                h.inv.setItem(slot, item(a.icon()!=null?a.icon():def.icon(), itemName, lore, a.itemModel()));
             }
         }
         List<Integer> bSlots = c.slotList("gui.overview.slots.bonuses", List.of(20,21,23,24,38,39));
@@ -94,8 +97,11 @@ final class Guis {
 
     ItemStack statAssignItem(UUID u, StatDef def, int avail) {
         int pts = plugin.stats().getPoints(u, def.key()); int max = def.maxPoints(); int cap = plugin.stats().effectiveMaxPoints(u, def);
-        int bars = (int)Math.max(0, Math.min(10, Math.round(10.0 * pts / Math.max(1, max))));
-        String bar = "<green>"+"?".repeat(bars)+"</green><dark_gray>"+"?".repeat(10-bars)+"</dark_gray>";
+        int barLen = Math.max(1, plugin.getConfig().getInt("gui.repartir.bar-length", 10));
+        int bars = (int)Math.max(0, Math.min(barLen, Math.round(barLen * pts / Math.max(1.0, max))));
+        String filled = plugin.getConfig().getString("gui.repartir.bar-filled", "?");
+        String empty = plugin.getConfig().getString("gui.repartir.bar-empty", "?");
+        String bar = "<green>"+filled.repeat(bars)+"</green><dark_gray>"+empty.repeat(barLen-bars)+"</dark_gray>";
         List<String> lore = new ArrayList<>(); lore.add(bar); lore.add("<gray>Puestos: <white>"+pts+" / "+max+"</white>");
         if (cap < max) lore.add("<gray>L?mite por nivel: <yellow>"+cap+"</yellow> <dark_gray>(sube de nivel para m?s)</dark_gray>");
         for (StatAttribute a : def.attributes()) {

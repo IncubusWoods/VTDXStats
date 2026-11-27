@@ -40,6 +40,10 @@ clamp-refund-on-reload: true
 
 # GUI settings. Slots are 0-53. Invalid/duplicate slots are auto-resolved.
 gui:
+  format:
+    # Used in overview attribute items. Placeholders: {stat}, {attr}, {sep}
+    attribute-separator: " <gray>? <white>"
+    attribute-name: "<aqua>{stat}{sep}{attr}</white>"
   overview:
     title: "<dark_purple>Tus stats</dark_purple>"
     size: 54
@@ -56,6 +60,10 @@ gui:
     title: "<dark_purple>Repartir puntos</dark_purple>"
     size: 54
     filler: GRAY_STAINED_GLASS_PANE
+    # Progress bar shown in stat items. bar-length is the total chars.
+    bar-length: 10
+    bar-filled: "?"
+    bar-empty: "?"
     slots:
       info: 4
       volver: 45
