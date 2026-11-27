@@ -49,166 +49,158 @@ gui:
       repartir: 49
       cerrar: 53
       # 12 stat value slots in order of stats.*.attributes
-      values: [9,10,12,13,15,16,18,19,21,22,24,25]
-      # 6 bonus slots in stat order
-      bonuses: [28,31,34,37,40,43]
+      values: [9,10,12,13,15,16,27,28,30,31,33,34]
+      # 6 bonus slots in order of stats.*.bonuses
+      bonuses: [20,21,23,24,38,39]
   repartir:
-    title: "<dark_purple>Reparte tus puntos</dark_purple>"
-    size: 54
-    filler: GRAY_STAINED_GLASS_PANE
-    slots:
-      info: 22
-      cerrar: 49
-      # 6 stat slots in stat order
-      stats: [4,15,33,40,29,11]
-  admin-players:
-    title: "<dark_red>VTDXStats - Jugadores</dark_red>"
-    size: 54
-    filler: GRAY_STAINED_GLASS_PANE
-    slots:
-      previous: 45
-      close: 49
-      next: 53
-      players: [10,11,12,13,14,15,16,19,20,21,22,23,24,25,28,29,30,31,32,33,34]
-  admin-player:
-    title: "<dark_red>Stats de {player}</dark_red>"
+    title: "<dark_purple>Repartir puntos</dark_purple>"
     size: 54
     filler: GRAY_STAINED_GLASS_PANE
     slots:
       info: 4
-      reset: 49
+      volver: 45
+      cerrar: 53
+      stats: [19,21,23,25,29,31]
+  admin:
+    players-title: "<dark_red>VTDXStats Admin</dark_red>"
+    player-title: "<dark_red>Stats: {player}</dark_red>"
+    size: 54
+    filler: GRAY_STAINED_GLASS_PANE
+    players-slots: [10,11,12,13,14,15,16,19,20,21,22,23,24,25,28,29,30,31,32,33,34]
+    slots:
+      prev: 45
+      next: 53
       back: 45
+      reset: 49
       close: 53
-      # one slot per stat, in stat order
-      stats: [19,20,21,22,23,24]
+      config: 46
+      info: 4
+      # Scale toggle slots (attributes/bonuses in order)
+      stats: [19,20,21,22,23,24,28,29,30,31,32,33,37,38,39,40,41,42]
 
 messages:
   no-permission: "<red>No tienes permiso.</red>"
   no-bridge: "<red>VTuberDexBridge no est? disponible.</red>"
-  no-profile: "<yellow>Sin ficha vinculada. Vincula tu cuenta para usar stats.</yellow>"
-  reloaded: "<green>VTDXStats recargado.</green>"
-  reset-self: "<green>Tus puntos de stats fueron reiniciados.</green>"
-  reset-other: "<green>Stats reiniciados para <white>{player}</white>.</green>"
+  no-profile: "<red>No se pudo obtener tu perfil de VTuberDex.</red>"
+  no-points: "<red>No tienes puntos disponibles.</red>"
+  maxed: "<yellow>Esta stat ya est? al m?ximo.</yellow>"
+  level-cap: "<yellow>Alcanzaste el l?mite de esta stat para tu nivel actual.</yellow>"
   stat-disabled: "<red>Esa stat est? desactivada por un administrador.</red>"
+  assigned: "<green>Asignaste <white>{amount}</white> punto(s) a <white>{stat}</white>.</green>"
+  reset-self: "<green>Tus puntos de stats fueron reiniciados.</green>"
+  reset-other: "<green>Stats reiniciadas para <white>{player}</white>.</green>"
+  reloaded: "<green>VTDXStats recargado.</green>"
 
-# 6 stats. Default mirrors VTuberDex. id is internal key.
+# Stat definitions. All values are configurable.
 stats:
   vitalidad:
     name: "Vitalidad"
-    icon: GOLDEN_APPLE
+    icon: RED_DYE
     max-points: 200
     description: "Vida y defensa."
     attributes:
       - id: MAX_HEALTH
-        per-point: 25
-        cap: 5000
         display: "Vida m?xima"
+        per-point: 0.1
+        cap: 20.0
       - id: DEFENSE
-        per-point: 5
-        cap: 1000
         display: "Defensa"
-    bonuses:
-      - type: MAGIC_DAMAGE_REDUCTION
-        id: RESISTENCIA_MAGICA
+        per-point: 0.1
+        cap: 20.0
+      - id: MAGIC_DAMAGE_REDUCTION
         display: "+50% resistencia m?gica"
-        multiplier: 0.5
-        causes: [MAGIC, DRAGON_BREATH]
+        per-point: 0.25
+        cap: 50.0
+        type: PERCENT
   fuerza:
     name: "Fuerza"
-    icon: IRON_SWORD
+    icon: ORANGE_DYE
     max-points: 200
     description: "Da?o f?sico."
     attributes:
       - id: ATTACK_DAMAGE
-        per-point: 12.5
-        cap: 2500
         display: "Da?o de ataque"
+        per-point: 0.1
+        cap: 20.0
       - id: PHYSICAL_DAMAGE
-        per-point: 0.25
-        cap: 50
         display: "Da?o f?sico"
-    bonuses:
-      - type: AOE_DAMAGE
-        id: DANO_EXPANSIVO
+        per-point: 0.1
+        cap: 20.0
+      - id: AOE_DAMAGE
         display: "+3 da?o expansivo"
-        damage: 3.0
-        radius: 3.0
-        exclude-players: true
+        per-point: 0.015
+        cap: 3.0
+        type: BONUS
   agilidad:
     name: "Agilidad"
-    icon: FEATHER
+    icon: YELLOW_DYE
     max-points: 200
     description: "Velocidad y evasi?n."
     attributes:
       - id: ATTACK_SPEED
-        per-point: 0.02
-        cap: 4
         display: "Velocidad de ataque"
+        per-point: 0.005
+        cap: 1.0
+      - id: MOVEMENT_SPEED
+        display: "Velocidad de movimiento"
+        per-point: 0.0005
+        cap: 0.1
       - id: DODGE_RATING
-        per-point: 0.375
-        cap: 75
         display: "Evasi?n"
-    bonuses:
-      - type: MYTHICLIB_STAT
-        id: MOVEMENT_SPEED_BONUS
-        stat: MOVEMENT_SPEED
-        value: 0.1
-        display: "+0.1 velocidad de movimiento"
+        per-point: 0.05
+        cap: 10.0
   inteligencia:
     name: "Inteligencia"
-    icon: LAPIS_LAZULI
+    icon: PURPLE_DYE
     max-points: 200
     description: "Da?o m?gico y man?."
     attributes:
       - id: MAGIC_DAMAGE
-        per-point: 0.25
-        cap: 50
         display: "Da?o m?gico"
+        per-point: 0.1
+        cap: 20.0
       - id: MAX_MANA
-        per-point: 25
-        cap: 5000
         display: "Man? m?ximo"
-    bonuses:
-      - type: MYTHICLIB_STAT
-        id: MANA_REGENERATION_BONUS
-        stat: MANA_REGENERATION
-        value: 50
+        per-point: 0.25
+        cap: 50.0
+      - id: MANA_REGENERATION
         display: "+50 regeneraci?n de man?"
+        per-point: 0.25
+        cap: 50.0
   destreza:
     name: "Destreza"
-    icon: SPECTRAL_ARROW
+    icon: CYAN_DYE
     max-points: 200
     description: "Proyectiles y precisi?n."
     attributes:
       - id: PROJECTILE_DAMAGE
-        per-point: 0.25
-        cap: 50
         display: "Da?o de proyectil"
-      - id: RECOIL
-        per-point: -0.5
-        cap: -100
+        per-point: 0.1
+        cap: 20.0
+      - id: SPREAD
         display: "Dispersi?n"
-    bonuses:
-      - type: MYTHICLIB_STAT
-        id: CRITICAL_STRIKE_POWER_BONUS
-        stat: CRITICAL_STRIKE_POWER
-        value: 25
+        per-point: -0.0005
+        cap: -0.1
+      - id: CRIT_DAMAGE
         display: "+25% da?o cr?tico"
+        per-point: 0.125
+        cap: 25.0
   suerte:
     name: "Suerte"
-    icon: RABBIT_FOOT
+    icon: LIME_DYE
     max-points: 200
     description: "Cr?tico y suerte."
     attributes:
       - id: CRITICAL_STRIKE_CHANCE
-        per-point: 0.5
-        cap: 100
         display: "Probabilidad de cr?tico"
+        per-point: 0.05
+        cap: 10.0
       - id: LUCK
-        per-point: 0.025
-        cap: 5
         display: "Suerte"
-    bonuses:
-      - type: FALL_DAMAGE_IMMUNITY
-        id: REDUCCION_CAIDA
+        per-point: 0.1
+        cap: 20.0
+      - id: FALL_DAMAGE_REDUCTION
         display: "100% reducci?n de da?o por ca?da"
+        per-point: 0.5
+        cap: 100.0
+        type: PERCENT

@@ -17,7 +17,9 @@ final class GuiUtil {
     static Component mm(String s) { return MM.deserialize(s == null ? "" : s); }
     static String plain(Component c) { return PlainTextComponentSerializer.plainText().serialize(c); }
 
-    static ItemStack item(Material mat, String name, List<String> lore) {
+    static ItemStack item(Material mat, String name, List<String> lore) { return item(mat, name, lore, null); }
+
+    static ItemStack item(Material mat, String name, List<String> lore, String itemModel) {
         ItemStack it = new ItemStack(mat == null ? Material.STONE : mat);
         ItemMeta meta = it.getItemMeta();
         if (meta != null) {
@@ -27,9 +29,21 @@ final class GuiUtil {
                 for (String l : lore) lc.add(mm(l));
                 meta.lore(lc);
             }
+            applyItemModel(meta, itemModel);
             it.setItemMeta(meta);
         }
         return it;
+    }
+
+    static void applyItemModel(ItemMeta meta, String model) {
+        if (meta == null || model == null || model.isBlank()) return;
+        try {
+            String[] parts = model.trim().split(":", 2);
+            org.bukkit.NamespacedKey key = parts.length == 2
+                    ? new org.bukkit.NamespacedKey(parts[0].toLowerCase(java.util.Locale.ROOT), parts[1])
+                    : org.bukkit.NamespacedKey.minecraft(model.trim().toLowerCase(java.util.Locale.ROOT));
+            meta.setItemModel(key);
+        } catch (Throwable ignored) {}
     }
 
     static void fill(Inventory inv, Material filler) {

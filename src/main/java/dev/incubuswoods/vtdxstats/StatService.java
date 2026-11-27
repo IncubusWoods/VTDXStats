@@ -52,15 +52,18 @@ final class StatService {
 
     int getPoints(UUID uuid, String stat) { return Math.max(0, plugin.store().get(uuid).points().getOrDefault(stat.toLowerCase(Locale.ROOT), 0)); }
 
-    boolean isStatDisabled(UUID uuid, String stat) { return plugin.store().isDisabled(uuid, stat); }
+    boolean isScaleDisabled(UUID uuid, String scaleKey) { return plugin.store().isDisabled(uuid, scaleKey); }
 
-    boolean toggleStatDisabled(UUID uuid, String stat) {
-        boolean now = plugin.store().toggleDisabled(uuid, stat);
+    boolean toggleScaleDisabled(UUID uuid, String scaleKey) {
+        boolean now = plugin.store().toggleDisabled(uuid, scaleKey);
         plugin.store().savePlayer(uuid);
         Player p = Bukkit.getPlayer(uuid);
         if (p != null) apply(p);
         return now;
     }
+
+    // compatibility
+    boolean isStatDisabled(UUID uuid, String stat) { return false; }
 
     int effectiveMaxPoints(UUID uuid, StatDef def) {
         return plugin.cfg().effectiveMaxPoints(def, resolveLevel(uuid));
@@ -69,7 +72,6 @@ final class StatService {
     int addPoints(UUID uuid, String stat, int amount) {
         StatDef def = plugin.cfg().get(stat);
         if (def == null || amount <= 0) return 0;
-        if (isStatDisabled(uuid, stat)) return 0;
         int cur = getPoints(uuid, stat);
         int cap = effectiveMaxPoints(uuid, def);
         int can = Math.min(amount, Math.max(0, cap - cur));
@@ -116,14 +118,16 @@ final class StatService {
         if (changed) plugin.store().savePlayer(uuid);
     }
 
+    static String scaleKey(String stat, String type, String id) { return stat.toLowerCase(Locale.ROOT)+"."+type.toLowerCase(Locale.ROOT)+"."+id.toLowerCase(Locale.ROOT); }
+
     void apply(Player player) {
         if (player == null) return;
         clampRefund(player.getUniqueId());
         UUID uuid = player.getUniqueId();
         for (StatDef def : plugin.cfg().defs()) {
-            boolean disabled = isStatDisabled(uuid, def.key());
-            int pts = disabled ? 0 : getPoints(uuid, def.key());
+            int pts = getPoints(uuid, def.key());
             for (StatAttribute attr : def.attributes()) {
+                boolean disabled = isScaleDisabled(uuid, scaleKey(def.key(), "attr", attr.id()));
                 double value = disabled ? 0.0 : attr.valueFor(pts, def.maxPoints());
                 plugin.mythic().apply(player, attr.id(), value);
             }
@@ -131,6 +135,7 @@ final class StatService {
                 if ("MYTHICLIB_STAT".equalsIgnoreCase(bonus.type())) {
                     String bstat = bonus.raw().getString("stat", "");
                     double bval = bonus.raw().getDouble("value", 0.0);
+                    boolean disabled = isScaleDisabled(uuid, scaleKey(def.key(), "bonus", bonus.id()));
                     boolean active = !disabled && pts >= def.maxPoints();
                     plugin.mythic().apply(player, bstat, active ? bval : 0.0);
                 }

@@ -16,10 +16,15 @@ public final class VTDXStats extends JavaPlugin implements Listener {
     private MythicLibHook mythic;
     private StatService stats;
     private Guis guis;
+    final java.util.Map<java.util.UUID, PendingEdit> pendingEdits = new java.util.concurrent.ConcurrentHashMap<>();
+
+    record PendingEdit(String type, String stat, String subType, String subId) {} // type SLOT or MODEL; subType attr/bonus/stat
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        ConfigUpdater.update(this, "config.yml");
+        reloadConfig();
         this.cfg = new StatConfig(this);
         this.store = new PlayerStore(this);
         this.bridge = new BridgeHook(this);
@@ -31,6 +36,7 @@ public final class VTDXStats extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
         Bukkit.getPluginManager().registerEvents(new GuiListener(this), this);
         Bukkit.getPluginManager().registerEvents(new BonusListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new ChatListener(this), this);
 
         PluginCommand cmd = getCommand("vtdxstats");
         if (cmd != null) {

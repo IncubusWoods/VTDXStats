@@ -62,17 +62,24 @@ final class StatConfig {
                 double pp = num(m.get("per-point"));
                 double cap = num(m.get("cap"));
                 String display = str(m.get("display")); if (display.isBlank()) display = id;
-                attrs.add(new StatAttribute(id, pp, cap, display));
+                String im = str(m.get("item-model"));
+                Material aicon = mat(str(m.get("icon")), icon);
+                int aslot = (int) num(m.get("slot") == null ? -1 : m.get("slot"));
+                attrs.add(new StatAttribute(id, pp, cap, display, aicon, im, aslot));
             }
             List<StatBonus> bonuses = new ArrayList<>();
             for (Map<?,?> m : s.getMapList("bonuses")) {
                 String type = str(m.get("type")).toUpperCase(Locale.ROOT);
                 String id = str(m.get("id")); if (id.isBlank()) id = type;
                 String display = str(m.get("display")); if (display.isBlank()) display = id;
+                String im = str(m.get("item-model"));
+                Material bicon = mat(str(m.get("icon")), Material.NETHER_STAR);
+                int bslot = (int) num(m.get("slot") == null ? -1 : m.get("slot"));
                 ConfigurationSection raw = toSection(s, "bonuses._tmp_" + bonuses.size(), m);
-                bonuses.add(new StatBonus(type, id, display, raw));
+                bonuses.add(new StatBonus(type, id, display, bicon, im, bslot, raw));
             }
-            StatDef def = new StatDef(key, name, icon, maxPoints, desc, attrs, bonuses);
+            String statItemModel = str(s.getString("item-model"));
+            StatDef def = new StatDef(key, name, icon, statItemModel, maxPoints, desc, attrs, bonuses);
             stats.put(key.toLowerCase(Locale.ROOT), def);
             statOrder.add(key.toLowerCase(Locale.ROOT));
         }
@@ -97,6 +104,7 @@ final class StatConfig {
         try { return FallbackSource.valueOf(s.trim().toUpperCase(Locale.ROOT)); } catch (Exception e) { return FallbackSource.LAST_KNOWN; }
     }
     static String str(Object o) { return o == null ? "" : String.valueOf(o).trim(); }
+    static Material mat(String name, Material def) { if (name == null || name.isBlank()) return def; Material m = Material.matchMaterial(name.trim()); return m == null ? def : m; }
     static double num(Object o) { if (o instanceof Number n) return n.doubleValue(); try { return Double.parseDouble(String.valueOf(o)); } catch (Exception e) { return 0; } }
 
     int maxPointsForLevel(int level) {
@@ -115,6 +123,58 @@ final class StatConfig {
     int effectiveMaxPoints(StatDef def, int level) {
         int byLevel = maxPointsForLevel(level);
         return Math.max(0, Math.min(def.maxPoints(), byLevel));
+    }
+
+    void setStatSlot(String statKey, int slot) {
+        plugin.getConfig().set("gui.repartir.stat-slots." + statKey.toLowerCase(Locale.ROOT), slot);
+        plugin.saveConfig(); reload();
+    }
+    void setAttributeSlot(String statKey, String attrId, int slot) { setListIntField(statKey, "attributes", "id", attrId, "slot", slot); }
+    void setBonusSlot(String statKey, String bonusId, int slot) { setListIntField(statKey, "bonuses", "id", bonusId, "slot", slot); }
+    void setAttributeItemModel(String statKey, String attrId, String model) { setListStringField(statKey, "attributes", "id", attrId, "item-model", model); }
+    void setBonusItemModel(String statKey, String bonusId, String model) { setListStringField(statKey, "bonuses", "id", bonusId, "item-model", model); }
+    void setStatItemModel(String statKey, String model) {
+        plugin.getConfig().set("stats." + statKey.toLowerCase(Locale.ROOT) + ".item-model", model);
+        plugin.saveConfig(); reload();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void setListIntField(String statKey, String listName, String matchKey, String matchValue, String field, int value) {
+        String path = "stats." + statKey.toLowerCase(Locale.ROOT) + "." + listName;
+        List<Map<?,?>> list = plugin.getConfig().getMapList(path);
+        List<Map<String,Object>> out = new ArrayList<>();
+        boolean done = false;
+        for (Map<?,?> m : list) {
+            Map<String,Object> nm = new LinkedHashMap<>();
+            for (Map.Entry<?,?> e : m.entrySet()) nm.put(String.valueOf(e.getKey()), e.getValue());
+            String mv = str(nm.get(matchKey));
+            if (!done && mv.equalsIgnoreCase(matchValue)) { nm.put(field, value); done = true; }
+            out.add(nm);
+        }
+        if (!done) {
+            Map<String,Object> nm = new LinkedHashMap<>(); nm.put(matchKey, matchValue); nm.put(field, value); out.add(nm);
+        }
+        plugin.getConfig().set(path, out);
+        plugin.saveConfig(); reload();
+    }
+    @SuppressWarnings("unchecked")
+    private void setListStringField(String statKey, String listName, String matchKey, String matchValue, String field, String value) {
+        String path = "stats." + statKey.toLowerCase(Locale.ROOT) + "." + listName;
+        List<Map<?,?>> list = plugin.getConfig().getMapList(path);
+        List<Map<String,Object>> out = new ArrayList<>();
+        boolean done = false;
+        for (Map<?,?> m : list) {
+            Map<String,Object> nm = new LinkedHashMap<>();
+            for (Map.Entry<?,?> e : m.entrySet()) nm.put(String.valueOf(e.getKey()), e.getValue());
+            String mv = str(nm.get(matchKey));
+            if (!done && mv.equalsIgnoreCase(matchValue)) { nm.put(field, value); done = true; }
+            out.add(nm);
+        }
+        if (!done) {
+            Map<String,Object> nm = new LinkedHashMap<>(); nm.put(matchKey, matchValue); nm.put(field, value); out.add(nm);
+        }
+        plugin.getConfig().set(path, out);
+        plugin.saveConfig(); reload();
     }
 
     private static ConfigurationSection toSection(ConfigurationSection parent, String path, Map<?,?> map) {
