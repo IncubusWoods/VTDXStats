@@ -90,6 +90,6 @@ public final class VTDXStats extends JavaPlugin implements Listener {
     PlayerStore store() { return store; }
     BridgeHook bridge() { return bridge; }
     MythicLibHook mythic() { return mythic; }
-    StatService stats() { return stats; }
+    public StatService stats() { return stats; }
     Guis guis() { return guis; }
 }

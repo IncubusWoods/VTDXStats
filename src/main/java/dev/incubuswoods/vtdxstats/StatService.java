@@ -39,16 +39,16 @@ final class StatService {
         return cfg.fallbackSource == FallbackSource.FIXED;
     }
 
-    int totalPoints(UUID uuid) { return resolveLevel(uuid) * plugin.cfg().pointsPerLevel; }
+    public int totalPoints(UUID uuid) { return resolveLevel(uuid) * plugin.cfg().pointsPerLevel; }
 
-    int spentPoints(UUID uuid) {
+    public int spentPoints(UUID uuid) {
         PlayerStatData d = plugin.store().get(uuid);
         int sum = 0;
         for (StatDef def : plugin.cfg().defs()) sum += Math.max(0, d.points().getOrDefault(def.key(), 0));
         return sum;
     }
 
-    int availablePoints(UUID uuid) { return Math.max(0, totalPoints(uuid) - spentPoints(uuid)); }
+    public int availablePoints(UUID uuid) { return Math.max(0, totalPoints(uuid) - spentPoints(uuid)); }
 
     int getPoints(UUID uuid, String stat) { return Math.max(0, plugin.store().get(uuid).points().getOrDefault(stat.toLowerCase(Locale.ROOT), 0)); }
 
