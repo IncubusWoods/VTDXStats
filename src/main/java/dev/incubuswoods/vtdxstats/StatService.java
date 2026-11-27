@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
-final class StatService {
+public final class StatService {
     private final VTDXStats plugin;
 
     StatService(VTDXStats plugin) { this.plugin = plugin; }
